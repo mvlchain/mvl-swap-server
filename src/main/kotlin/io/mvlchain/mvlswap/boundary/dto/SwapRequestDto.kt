@@ -1,12 +1,21 @@
 package io.mvlchain.mvlswap.boundary.dto
 
+import org.jetbrains.annotations.NotNull
 import java.math.BigDecimal
 
 data class SwapRequestDto (
-    val outAmount: BigDecimal? = null,
-    val randomNumberHash: String? = null,
-    val timestamp: Long = 0,
-    val refundAddr: String? = null,
-    val bep2RecipientAddr: String? = null,
-    val erc20SenderAddr: String? = null
+    @NotNull
+    val outAmount: BigDecimal,
+    @NotNull
+    val randomNumberHash: String,
+    @NotNull
+    val timestamp: Long,
+    @NotNull
+    val refundAddr: String,
+    @NotNull
+    val bep2RecipientAddr: String,
+    @NotNull
+    val erc20SenderAddr: String,
+    @NotNull
+    val signature: String
 )

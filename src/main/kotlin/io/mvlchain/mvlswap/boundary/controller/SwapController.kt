@@ -1,67 +1,56 @@
 package io.mvlchain.mvlswap.boundary.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.mvlchain.mvlswap.boundary.dto.RequestSwapByHashDto
+import io.mvlchain.mvlswap.boundary.dto.SwapHistoryResponseDto
 import io.mvlchain.mvlswap.boundary.dto.SwapRequestDto
+import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
+import io.mvlchain.mvlswap.usecase.RefundUsecase
+import io.mvlchain.mvlswap.usecase.RequestSwapUsecase
+import io.mvlchain.mvlswap.usecase.SwapClaimUsecase
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.ui.Model
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.io.IOException
 import java.math.BigDecimal
-import java.util.concurrent.ExecutionException
 
 @RestController
+@RequestMapping(path = ["/swapHistory"])
 class SwapController(
-    @Autowired
-    private val swapRepository: SwapHistoryRepository
+    private val swapRepository: SwapHistoryRepository,
+    private val refundUsecase: RefundUsecase,
+    private val swapClaimUsecase: SwapClaimUsecase,
+    private val requestSwapUsecase: RequestSwapUsecase
 ) {
     private val GETPROVIDER_DEV: String = ETHProvider.getAPIHost("ETH");
 
-    @PostMapping("/requestSwapByRandomNumberHash")
-    fun requestSwapByRandomNumberHash(
-        @RequestBody requestSwapByHash: RequestSwapByHashDto,
-    ): String? {
-        //<-- 예외처리 추가
-        val swap =
-            swapRepository!!.findByRandomNumberHash(requestSwapByHash.randomNumberHash)
-        val mapper = ObjectMapper()
-        val map: MutableMap<String, Any?> = HashMap()
-        map["result"] = 1
-        map["swap"] = swap
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map)
+    @GetMapping("/{hash}")
+    fun findSwapHistoryByHash(
+        @PathVariable hash: String
+    ): SwapHistoryResponseDto {
+        val swapHistory = swapRepository.findByRandomNumberHash(hash) ?: throw Exception("not found")
+        TODO("implement")
     }
 
-    @PostMapping("/requestSwap")
+    @PostMapping
     fun requestSwap(
-        @RequestBody swapRequestDto: SwapRequestDto,
-    ): String? {
+        @RequestBody @Validated swapRequestDto: SwapRequestDto,
+    ): SwapResponeDto {
+        return requestSwapUsecase.execute()
+    }
 
-        val lNow = System.currentTimeMillis()
-        val In_amount = swapRequestDto.outAmount!!.subtract(BigDecimal("100"))
-        val swap = SWAP()
-        swap.deputyOutAmount = swapRequestDto.outAmount!!.subtract(BigDecimal("100")).toPlainString()
-        swap.erc20ChainAddr = "0xA1805D94419b88e30F88bD3Ab3bC618610805f26"
-        swap.inAmount = In_amount.toString()
-        swap.outAmount = swapRequestDto.outAmount!!.toPlainString()
-        swap.randomNumberHash = swapRequestDto.randomNumberHash
-        swap.receiverAddr = swapRequestDto.bep2RecipientAddr
-        swap.refundAddr = swapRequestDto.refundAddr
-        swap.senderAddr = "0x0000000000000000000000000000000000000000"
-        swap.status = "1"
-        swap.timestamp = lNow
-        swap.type = "1s"
+    @PostMapping("/{hash}/claim")
+    fun claim(@PathVariable hash: String) {
+        swapClaimUsecase.execute(hash)
+    }
 
-        swapRepository!!.save(swap)
-
-        val mapper = ObjectMapper()
-        val map: MutableMap<String, Any> = HashMap()
-        map["result"] = 1
-        map["In_amount"] = In_amount
-        map["Receiver_addr"] = "0x2E653AEf53656fd39E44aF28090d27BD1F6c5984"
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map)
+    @PostMapping("/{hash}/refund")
+    fun refund(@PathVariable hash: String) {
+        refundUsecase.execute(hash)
     }
 }
