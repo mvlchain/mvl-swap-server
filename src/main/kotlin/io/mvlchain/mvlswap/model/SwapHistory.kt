@@ -5,6 +5,7 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.sql.Date
+import java.time.Instant
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EntityListeners
@@ -41,9 +42,9 @@ class SwapHistory {
 
     @CreatedDate
     @Column(updatable = false)
-    var createdAt: Date? = null
+    var createdAt: Instant? = null
 
     @LastModifiedDate
     @Column(updatable = true)
-    var updatedAt: Date? = null
+    var updatedAt: Instant? = null
 }
