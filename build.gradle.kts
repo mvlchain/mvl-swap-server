@@ -31,6 +31,12 @@ dependencies {
     
 }
 
+dependencies{
+    implementation("com.squareup.okhttp3:okhttp:4.3.1")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.3.1")
+}
+
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
