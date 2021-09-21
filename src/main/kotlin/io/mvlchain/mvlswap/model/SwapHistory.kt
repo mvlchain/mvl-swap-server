@@ -37,7 +37,6 @@ class SwapHistory {
     var timestamp: Long = 0
     val randomNumber: String? = null
     var status: String? = null
-    var refundAddr: String? = null
     var erc20SenderAddr: String? = null
 
     @CreatedDate

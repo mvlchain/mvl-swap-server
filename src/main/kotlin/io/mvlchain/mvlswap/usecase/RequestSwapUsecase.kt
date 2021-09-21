@@ -11,30 +11,41 @@ import java.math.BigDecimal
 
 @Component
 class RequestSwapUsecase(
+
     private val swapHistoryRepository: SwapHistoryRepository
 ) {
 
+
+    companion object {
+        private val Fee:String="0"
+        private val DeputyErc20Address:String="0x0000000000000000000000000000000000000000"
+        private val DeputyBep2Address:String="0x0000000000000000000000000000000000000000"
+
+    }
+
     fun execute(swapRequestDto: SwapRequestDto): SwapResponeDto {
 
-        val lNow = System.currentTimeMillis()
-        val In_amount = swapRequestDto.outAmount.subtract(BigDecimal("100"))
+        val fee:String = "0"
+
+        val In_amount = swapRequestDto.outAmount!!.subtract(BigDecimal(Fee))
+
         val swap = SwapHistory()
-        swap.deputyOutAmount = swapRequestDto.outAmount.subtract(BigDecimal("100")).toPlainString()
-        swap.erc20ChainAddr = "0xA1805D94419b88e30F88bD3Ab3bC618610805f26"
+
+        swap.erc20SenderAddr = swapRequestDto.erc20SenderAddr
+        swap.deputyOutAmount = swapRequestDto.outAmount!!.subtract(BigDecimal(Fee)).toPlainString()
+        swap.erc20ChainAddr = DeputyErc20Address
         swap.inAmount = In_amount.toString()
-        swap.outAmount = swapRequestDto.outAmount.toPlainString()
+        swap.outAmount = swapRequestDto.outAmount!!.toPlainString()
         swap.randomNumberHash = swapRequestDto.randomNumberHash
         swap.receiverAddr = swapRequestDto.bep2RecipientAddr
-        swap.refundAddr = swapRequestDto.refundAddr
-        swap.senderAddr = "0x0000000000000000000000000000000000000000"
+        swap.senderAddr = DeputyBep2Address
         swap.status = "REQUESTED"
-        swap.timestamp = lNow
+        swap.timestamp = swapRequestDto.timestamp
         swap.type = "1s"
+        swap.expireHeight = 1000
+        swapHistoryRepository!!.save(swap)
 
-        swapHistoryRepository.save(swap)
-
-        return SwapResponeDto(depositAddress = "0x2E653AEf53656fd39E44aF28090d27BD1F6c5984", amount = In_amount)
-
+        return SwapResponeDto(depositAddress = DeputyErc20Address, amount = In_amount)
     }
 }
 

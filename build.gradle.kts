@@ -54,6 +54,7 @@ dependencies{
     implementation("com.google.guava:guava:30.1.1-jre")
     // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
     implementation("com.google.protobuf:protobuf-java:4.0.0-rc-2")
+    implementation("org.bitcoinj:bitcoinj-core:0.15.10")
 }
 
 
