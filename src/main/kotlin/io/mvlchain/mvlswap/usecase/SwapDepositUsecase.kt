@@ -156,7 +156,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
             val token:Token = Token("0x0000000000000000000000000000000000000000", swapHistory.inAmount!!.toLong() )
             val listToken:List<Token> = listOf(token)
             htltReq.outAmount = listToken
-            htltReq.expectedIncome = swapHistory.inAmount
+            htltReq.expectedIncome = swapHistory.inAmountToRecipient
             htltReq.heightSpan = swapHistory.expireHeight
             htltReq.isCrossChain = true
 

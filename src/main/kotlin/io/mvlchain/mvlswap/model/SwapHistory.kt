@@ -28,14 +28,14 @@ class SwapHistory {
     var senderAddr: String? = null
     var receiverAddr: String? = null
     var erc20ChainAddr: String? = null
-    var inAmount: String? = null
-    var outAmount: String? = null
+    var inAmountToRecipient: String? = null
+    var outAmountFromSender: String? = null
     var deputyOutAmount: String? = null
     var randomNumberHash: String? = null
     var expireHeight: Long = 0
     val height: Long = 0
     var timestamp: Long = 0
-    val randomNumber: String? = null
+    var randomNumber: String? = null
     var status: String? = null
     var erc20SenderAddr: String? = null
 

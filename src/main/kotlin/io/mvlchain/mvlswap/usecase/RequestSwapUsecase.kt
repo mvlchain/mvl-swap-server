@@ -27,25 +27,26 @@ class RequestSwapUsecase(
 
         val fee:String = "0"
 
-        val In_amount = swapRequestDto.outAmount!!.subtract(BigDecimal(Fee))
+        val InAmountToRecipient = swapRequestDto.outAmount!!.subtract(BigDecimal(Fee))
 
         val swap = SwapHistory()
 
         swap.erc20SenderAddr = swapRequestDto.erc20SenderAddr
         swap.deputyOutAmount = swapRequestDto.outAmount!!.subtract(BigDecimal(Fee)).toPlainString()
         swap.erc20ChainAddr = DeputyErc20Address
-        swap.inAmount = In_amount.toString()
-        swap.outAmount = swapRequestDto.outAmount!!.toPlainString()
+        swap.inAmountToRecipient = InAmountToRecipient.toString()
+        swap.outAmountFromSender = swapRequestDto.outAmount!!.toPlainString()
         swap.randomNumberHash = swapRequestDto.randomNumberHash
         swap.receiverAddr = swapRequestDto.bep2RecipientAddr
         swap.senderAddr = DeputyBep2Address
         swap.status = "REQUESTED"
         swap.timestamp = swapRequestDto.timestamp
-        swap.type = "1s"
+        swap.type = "FromErc20ToBep2"
         swap.expireHeight = 1000
+
         swapHistoryRepository!!.save(swap)
 
-        return SwapResponeDto(depositAddress = DeputyErc20Address, amount = In_amount)
+        return SwapResponeDto(depositAddress = DeputyErc20Address, amount = InAmountToRecipient)
     }
 }
 

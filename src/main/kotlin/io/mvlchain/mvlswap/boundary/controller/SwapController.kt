@@ -1,15 +1,9 @@
 package io.mvlchain.mvlswap.boundary.controller
 
-import io.mvlchain.mvlswap.boundary.dto.SwapClaimDto
-import io.mvlchain.mvlswap.boundary.dto.SwapHistoryResponseDto
-import io.mvlchain.mvlswap.boundary.dto.SwapRequestDto
-import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
+import io.mvlchain.mvlswap.boundary.dto.*
 import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
-import io.mvlchain.mvlswap.usecase.RefundUsecase
-import io.mvlchain.mvlswap.usecase.RequestSwapUsecase
-import io.mvlchain.mvlswap.usecase.SwapClaimUsecase
-import io.mvlchain.mvlswap.usecase.SwapDepositUsecase
+import io.mvlchain.mvlswap.usecase.*
 
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.validation.annotation.Validated
@@ -27,15 +21,23 @@ class SwapController(
     private val swapDepositUsecase: SwapDepositUsecase,
     private val refundUsecase: RefundUsecase,
     private val swapClaimUsecase: SwapClaimUsecase,
-    private val requestSwapUsecase: RequestSwapUsecase
+    private val requestSwapUsecase: RequestSwapUsecase,
+    private val requestBep2ToErc20SwapUsecase: RequestBep2ToErc20SwapUsecase
 ) {
     private val GETPROVIDER_DEV: String = ETHProvider.getAPIHost("ETH");
 
-    @PostMapping
+    @PostMapping("/erc20")
     fun requestSwap(
         @RequestBody @Validated swapRequestDto: SwapRequestDto,
     ): SwapResponeDto {
         return requestSwapUsecase.execute(swapRequestDto)
+    }
+
+    @PostMapping("/bep2")
+    fun requestBep2ToErc20Swap(
+        @RequestBody @Validated swapBep2ToErc20RequestDto: SwapBep2ToErc20RequestDto,
+    ): SwapResponeDto {
+        return requestBep2ToErc20SwapUsecase.execute(swapBep2ToErc20RequestDto)
     }
 
     @PostMapping("/{hash}/deposit")
@@ -61,11 +63,7 @@ class SwapController(
 
         val swapHistory = swapRepository.findByRandomNumberHash(hash) ?: throw Exception("not found")
 
-        val swapHistoryResponseDto = SwapHistoryResponseDto(
-            hash = hash,
-            type = swapHistory.type!!,
-            status = SwapStatus.valueOf(swapHistory.status.toString())
-        )
+        val swapHistoryResponseDto = SwapHistoryResponseDto(hash = hash, type = swapHistory.type!!, status = SwapStatus.valueOf(swapHistory.status.toString()))
         return swapHistoryResponseDto
     }
 

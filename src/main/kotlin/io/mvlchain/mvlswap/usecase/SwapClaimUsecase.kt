@@ -84,6 +84,7 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
             val ethSendTransaction = web3.ethSendRawTransaction(hexValue).send()
 
             val transactionHash = ethSendTransaction.transactionHash
+            println("transactionHash: " + transactionHash)
 
             var transactionReceipt: Optional<TransactionReceipt?>? = null
             do {
@@ -92,6 +93,7 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
                 transactionReceipt = ethGetTransactionReceiptResp.transactionReceipt
                 Thread.sleep(3000) // Wait 3 sec
             } while (!transactionReceipt!!.isPresent)
+            println("transactionReceipt: " + transactionReceipt)
 
             ///////////////////////////////////////////////////////////////////////////////////////
             //<-- binance claim
@@ -107,9 +109,12 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
             var listTxMetadata:List<TransactionMetadata> = binanceDexApiNodeClient.claimHtlt(
                 swapHistory.bnbChainSwapId, bytes32RandomNumber, wallet, TransactionOption.DEFAULT_INSTANCE, true )
 
+
+            swapHistory.randomNumber = swapClaimDto.randomNumber
             swapHistory.status = "CLAIMED"
 
             swapHistoryRepository!!.save(swapHistory)
+
 
 
         } catch (e: Exception) {
