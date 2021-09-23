@@ -1,11 +1,8 @@
 package io.mvlchain.mvlswap.usecase
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20RequestDto
-import io.mvlchain.mvlswap.boundary.dto.SwapRequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.model.SwapHistory
-import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import org.springframework.stereotype.Component
 import java.math.BigDecimal

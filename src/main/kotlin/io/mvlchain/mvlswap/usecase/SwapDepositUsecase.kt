@@ -48,9 +48,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
     private val GasPrice = "60"
     private val GasLimit = 480000L
 
-    fun execute(hash: String) {
-
-        try {
+    fun execute(hash: String): SwapDepositResponeDto {
 
             val swapHistory: SwapHistory = swapHistoryRepository.findByRandomNumberHash(hash)!!
 
@@ -64,8 +62,11 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
             val bep2RecipientB32Data: Bech32.Bech32Data? = Bech32.decode( swapHistory.receiverAddr)
             val strBep2RecipientB32Data:String = swapHistory.receiverAddr!!.substring(bep2RecipientB32Data!!.hrp.length)
             val bep2RecipientAddr  = Numeric.hexStringToByteArray(strBep2RecipientB32Data)
-            val outAmount = BigInteger(swapHistory.outAmount)
-            val bep2Amount = BigInteger(swapHistory.inAmount)
+
+        //7. _outAmount
+        val outAmount = BigInteger(swapHistory.outAmountFromSender)
+        //8. _bep2Amount
+        val bep2Amount = BigInteger(swapHistory.inAmountToRecipient)
 
             val htltFunction = Function(
                 "htlt",
@@ -164,24 +165,20 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
 
             var listTxMetadata:List<TransactionMetadata> = binanceDexApiNodeClient.htlt(htltReq,wallet, TransactionOption.DEFAULT_INSTANCE, true );
 
-            val swapID = listTxMetadata[0].log.split(" ")[3]
-            println("swapID:" + swapID)
+        val bep2SwapID = listTxMetadata[0].log.split(" ")[3]
+        println("bep2SwapID:" + bep2SwapID)
 
-            swapHistory.bnbChainSwapId = swapID
+        swapHistory.bnbChainSwapId = bep2SwapID
 
             swapHistory.status = "DEPOSITED"
 
             swapHistoryRepository!!.save(swapHistory)
 
-        } catch (e: Exception) {
-            println(
-                """
-            Exception: ${e.message}
-            
-            """.trimIndent()
+        return SwapDepositResponeDto(
+            erc20SwapID = erc20SwapID,
+            erc20TxHash = transactionHash,
+            bep2SwapID = bep2SwapID,
+            bep2TxHash = listTxMetadata[0].hash
             )
-            e.printStackTrace()
-        }
     }
-
 }

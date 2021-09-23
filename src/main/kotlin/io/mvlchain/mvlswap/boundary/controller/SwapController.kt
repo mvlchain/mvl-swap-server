@@ -21,16 +21,20 @@ class SwapController(
     private val swapDepositUsecase: SwapDepositUsecase,
     private val refundUsecase: RefundUsecase,
     private val swapClaimUsecase: SwapClaimUsecase,
-    private val requestSwapUsecase: RequestSwapUsecase,
+    private val requestErc20ToBep2SwapUsecase: RequestErc20ToBep2SwapUsecase,
     private val requestBep2ToErc20SwapUsecase: RequestBep2ToErc20SwapUsecase
+
+
 ) {
     private val GETPROVIDER_DEV: String = ETHProvider.getAPIHost("ETH");
+    private val Erc20SwapDepositAddress:String="0x000000"
+    private val Bep2DepositAddress:String="tbnb0000000"
 
     @PostMapping("/erc20")
     fun requestSwap(
-        @RequestBody @Validated swapRequestDto: SwapRequestDto,
+        @RequestBody @Validated swapErc20ToBep2RequestDto: SwapErc20ToBep2RequestDto,
     ): SwapResponeDto {
-        return requestSwapUsecase.execute(swapRequestDto)
+        return requestErc20ToBep2SwapUsecase.execute(swapErc20ToBep2RequestDto)
     }
 
     @PostMapping("/bep2")
@@ -41,8 +45,9 @@ class SwapController(
     }
 
     @PostMapping("/{hash}/deposit")
-    fun deposit(@PathVariable hash: String) {
-        swapDepositUsecase.execute(hash)
+    fun deposit(@PathVariable hash: String
+    ): SwapDepositResponeDto {
+        return swapDepositUsecase.execute(hash)
     }
 
     @PostMapping("/{hash}/claim")
@@ -67,6 +72,13 @@ class SwapController(
         return swapHistoryResponseDto
     }
 
+    @GetMapping("/depositAddress")
+    fun getSwapAddress(): SwapAddressResponseDto {
+
+        return SwapAddressResponseDto(Erc20SwapDepositAddress = Erc20SwapDepositAddress, Bep2DepositAddress = Bep2DepositAddress)
+    }
+
+    //swapHistory/{hash}
     @GetMapping("/Sender/{sender}")
     fun findSwapHistoryBySender(
         @PathVariable sender: String
@@ -79,4 +91,5 @@ class SwapController(
 
         return swapHR
     }
+
 }
