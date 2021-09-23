@@ -79,7 +79,7 @@ class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
                 Erc20SwapContractAddr, FunctionEncoder.encode(refundFunction)
             )
 
-            val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
+            val signedMessage = TransactionEncoder.signMessage(rawTransaction, 3.toByte(), credentials)
             val hexValue = Numeric.toHexString(signedMessage)
             val ethSendTransaction = web3.ethSendRawTransaction(hexValue).send()
 
