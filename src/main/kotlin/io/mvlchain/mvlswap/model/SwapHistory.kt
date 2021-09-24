@@ -4,14 +4,19 @@ import org.hibernate.annotations.DynamicInsert
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.math.BigDecimal
 import java.sql.Date
 import java.time.Instant
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EntityListeners
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.validation.constraints.Digits
+import javax.validation.constraints.NotNull
 
 @Entity
 @DynamicInsert
@@ -33,7 +38,15 @@ class SwapHistory {
     var deputyOutAmount: String? = null
     var randomNumberHash: String? = null
     var expireHeight: Long = 0
-    val height: Long = 0
+
+    @NotNull
+    @Column
+    var height: Long = 0
+
+    var randomNumber: String? = null
+
+    @NotNull
+    @Column
     var timestamp: Long = 0
     var randomNumber: String? = null
     var status: String? = null

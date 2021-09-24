@@ -1,11 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    val kotlinVersion = "1.5.21"
     id("org.springframework.boot") version "2.5.4"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.5.21"
-    kotlin("plugin.spring") version "1.5.21"
-    kotlin("plugin.jpa") version "1.5.21"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.spring") version kotlinVersion
+    kotlin("plugin.jpa") version kotlinVersion
+    kotlin("kapt") version kotlinVersion
 }
 
 group = "io.mvlchain"
@@ -54,7 +56,12 @@ dependencies{
     implementation("com.google.guava:guava:30.1.1-jre")
     // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
     implementation("com.google.protobuf:protobuf-java:4.0.0-rc-2")
-    implementation("org.bitcoinj:bitcoinj-core:0.15.10")
+
+    implementation("org.web3j:core:4.8.7")
+
+    // swagger
+    implementation("org.springdoc:springdoc-openapi-ui:1.5.6")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.6")
 }
 
 
