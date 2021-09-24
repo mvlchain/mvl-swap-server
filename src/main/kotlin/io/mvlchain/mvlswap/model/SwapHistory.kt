@@ -1,6 +1,5 @@
 package io.mvlchain.mvlswap.model
 
-import org.hibernate.annotations.DynamicInsert
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -19,7 +18,6 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 
 @Entity
-@DynamicInsert
 @EntityListeners(AuditingEntityListener::class)
 class SwapHistory {
     @Id
@@ -27,29 +25,55 @@ class SwapHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 
-    var type: String? = null
+    @Column
+    @Enumerated(EnumType.STRING)
+    var type: SwapType = SwapType.TO_BEP2
+
+    @Column
     var bnbChainSwapId: String? = null
+
+    @Column
     var erc20ChainSwapId: String? = null
+
+    @Column
     var senderAddr: String? = null
+
+    @Column
     var receiverAddr: String? = null
+
+    @Column
     var erc20ChainAddr: String? = null
-    var inAmountToRecipient: String? = null
-    var outAmountFromSender: String? = null
-    var deputyOutAmount: String? = null
+
+    @Column
+    @Digits(integer = 10, fraction = 8)
+    var inAmountToRecipient: BigDecimal? = null
+
+    @Column
+    @Digits(integer = 10, fraction = 8)
+    var outAmountFromSender: BigDecimal? = null
+
+    @Column
+    @Digits(integer = 10, fraction = 8)
+    var deputyOutAmount: BigDecimal? = null
+
+    @Column
     var randomNumberHash: String? = null
+
+    @Column
     var expireHeight: Long = 0
 
     @NotNull
     @Column
     var height: Long = 0
 
-    var randomNumber: String? = null
-
     @NotNull
     @Column
     var timestamp: Long = 0
-    var randomNumber: String? = null
-    var status: String? = null
+
+    @NotNull
+    @Column
+    var status: SwapStatus = SwapStatus.REQUESTED
+
     var erc20SenderAddr: String? = null
 
     @CreatedDate
