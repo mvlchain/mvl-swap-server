@@ -9,6 +9,7 @@ import com.binance.dex.api.client.domain.broadcast.HtltReq
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
 import com.binance.dex.api.client.encoding.Bech32
 import com.binance.dex.api.client.encoding.message.Token
+import io.mvlchain.mvlswap.boundary.dto.SwapDepositResponseDto
 import io.mvlchain.mvlswap.model.SwapHistory
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
@@ -48,7 +49,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
     private val GasPrice = "60"
     private val GasLimit = 480000L
 
-    fun execute(hash: String): SwapDepositResponeDto {
+    fun execute(hash: String): SwapDepositResponseDto {
 
             val swapHistory: SwapHistory = swapHistoryRepository.findByRandomNumberHash(hash)!!
 
@@ -154,7 +155,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
             htltReq.senderOtherChain = swapHistory.erc20SenderAddr
             htltReq.randomNumberHash = randomNumberHash
             htltReq.timestamp = swapHistory.timestamp
-            val token:Token = Token("0x0000000000000000000000000000000000000000", swapHistory.inAmount!!.toLong() )
+            val token:Token = Token("0x0000000000000000000000000000000000000000", swapHistory.inAmountToRecipient!!.toLong() )
             val listToken:List<Token> = listOf(token)
             htltReq.outAmount = listToken
             htltReq.expectedIncome = swapHistory.inAmountToRecipient
@@ -174,7 +175,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
 
             swapHistoryRepository!!.save(swapHistory)
 
-        return SwapDepositResponeDto(
+        return SwapDepositResponseDto(
             erc20SwapID = erc20SwapID,
             erc20TxHash = transactionHash,
             bep2SwapID = bep2SwapID,

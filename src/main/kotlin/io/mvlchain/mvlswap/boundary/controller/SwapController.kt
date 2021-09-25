@@ -46,7 +46,7 @@ class SwapController(
 
     @PostMapping("/{hash}/deposit")
     fun deposit(@PathVariable hash: String
-    ): SwapDepositResponeDto {
+    ): SwapDepositResponseDto {
         return swapDepositUsecase.execute(hash)
     }
 
