@@ -39,7 +39,7 @@ import java.util.*
 @Component
 class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
 
-    private val GetProviderDev: String = ETHProvider.getAPINode("ETH")
+    private val GetProviderDev: String = ETHProvider.getErc20Provider()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Bep2PrivateKey = "0x0000000000000000000000000000000000000000"
     private val GasPrice = "60"

@@ -2,52 +2,45 @@ package io.mvlchain.mvlswap.util
 
 class ETHProvider {
 
-    
-    enum class DeployPhase {
-        develop, production
-    }
-
-    enum class APIPhase {
-        testnet, mainnet
-    }
-
-    var phase = DeployPhase.develop
-    var apiPhase = APIPhase.testnet
-
-    private val apiKey = "0x0000000000000000000000000000000000000000"
-
-    fun getAPINode(code: String?): String? {
-        return Companion.getAPIHost(code) + apiKey
-    }
-
-    fun getAPIKey(): String? {
-        return apiKey
-    }
-
-    fun getExplorerAddress(code: String?): String? {
-        when (code) {
-            "ETH" -> return "https://etherscan.io/address/"
-        }
-        return ""
-    }
-
-    fun getExplorerTx(code: String?): String? {
-        when (code) {
-            "ETH" -> return "https://etherscan.io/tx/"
-        }
-        return ""
-    }
-
     companion object {
-        fun getAPIHost(code: String?): String {
-            when (code) {
-                "ETH" -> return "0x0000000000000000000000000000000000000000"
-            }
-            return ""
+        private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
+        private val Erc20Provider = "0x0000000000000000000000000000000000000000/"
+
+        private val DeputyErc20Address:String="0x0000000000000000000000000000000000000000"
+        private val DeputyBep2Address:String="0x0000000000000000000000000000000000000000"
+
+        private val GasPrice = "60"
+        private val GasLimit = 480000L
+
+        private val Erc20SwapContractAddr = "0x0000000000000000000000000000000000000000"
+
+        fun getErc20Provider(): String {
+            return Erc20Provider
         }
 
-        fun getAPINode(s: String): String {
-            return getAPIHost(s)
+        fun getErc20PrivateKey(): String {
+            return Erc20PrivateKey
         }
+
+        fun getDeputyErc20Address(): String {
+            return DeputyErc20Address
+        }
+
+        fun getDeputyBep2Address(): String {
+            return DeputyBep2Address
+        }
+
+        fun getGasPrice(): String {
+            return GasPrice
+        }
+
+        fun getGasLimit(): Long {
+            return GasLimit
+        }
+
+        fun getErc20SwapContractAddr(): String {
+            return Erc20SwapContractAddr
+        }
+
     }
 }

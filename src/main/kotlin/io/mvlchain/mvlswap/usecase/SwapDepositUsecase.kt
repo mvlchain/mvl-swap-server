@@ -41,7 +41,7 @@ import java.util.*
 @Component
 class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
-    private val GetProviderDev: String = ETHProvider.getAPINode("ETH")
+    private val GetProviderDev: String = ETHProvider.getDeputyErc20Address()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Bep2PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Erc20SwapContractAddr = "0x0000000000000000000000000000000000000000"
