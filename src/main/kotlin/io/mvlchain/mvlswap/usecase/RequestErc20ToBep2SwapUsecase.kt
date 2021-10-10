@@ -3,6 +3,7 @@ package io.mvlchain.mvlswap.usecase
 import io.mvlchain.mvlswap.boundary.dto.SwapErc20ToBep2RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.model.SwapType
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import org.springframework.stereotype.Component
@@ -44,7 +45,7 @@ class RequestErc20ToBep2SwapUsecase(
         swap.receiverAddr = swapErc20ToBep2RequestDto.bep2RecipientAddr
         // <--V
         swap.senderAddr = DeputyBep2Address
-        swap.status = "REQUESTED"
+        swap.status = SwapStatus.REQUESTED
         swap.timestamp = swapErc20ToBep2RequestDto.timestamp
         swap.type = SwapType.TO_BEP2
         swap.expireHeight = 1000

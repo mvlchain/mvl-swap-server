@@ -38,7 +38,8 @@ class SwapHistory {
     val height: Long = 0
     var timestamp: Long = 0
     var randomNumber: String? = null
-    var status: String? = null
+    @Enumerated(EnumType.STRING)
+    var status: SwapStatus = SwapStatus.REQUESTED
     var erc20SenderAddr: String? = null
     var refundRecipientAddr: String? = null
 

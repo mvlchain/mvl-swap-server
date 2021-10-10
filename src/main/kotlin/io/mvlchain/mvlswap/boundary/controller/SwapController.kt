@@ -8,7 +8,6 @@ import io.mvlchain.mvlswap.boundary.dto.SwapDepositResponseDto
 import io.mvlchain.mvlswap.boundary.dto.SwapErc20ToBep2RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapHistoryResponseDto
 import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
-import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.usecase.RefundUsecase
 import io.mvlchain.mvlswap.usecase.RequestBep2ToErc20SwapUsecase
@@ -74,7 +73,7 @@ class SwapController(
         @PathVariable hash: String
     ): SwapHistoryResponseDto {
         val swapHistory = swapRepository.findByRandomNumberHash(hash) ?: throw Exception("not found")
-        return SwapHistoryResponseDto(hash = hash, type = swapHistory.type, status = SwapStatus.valueOf(swapHistory.status.toString()))
+        return SwapHistoryResponseDto(hash = hash, type = swapHistory.type, status = swapHistory.status)
     }
 
     @GetMapping("/depositAddress")

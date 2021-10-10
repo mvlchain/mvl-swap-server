@@ -8,6 +8,7 @@ import com.binance.dex.api.client.domain.TransactionMetadata
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
 import io.mvlchain.mvlswap.boundary.dto.SwapClaimDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
@@ -107,9 +108,9 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
             )
 
             swapHistory.randomNumber = swapClaimDto.randomNumber
-            swapHistory.status = "CLAIMED"
+            swapHistory.status = SwapStatus.CLAIMED
 
-            swapHistoryRepository!!.save(swapHistory)
+            swapHistoryRepository.save(swapHistory)
         } catch (e: Exception) {
             println(
                 """

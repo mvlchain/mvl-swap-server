@@ -7,6 +7,7 @@ import com.binance.dex.api.client.Wallet
 import com.binance.dex.api.client.domain.TransactionMetadata
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
@@ -89,8 +90,8 @@ class RefundUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
             val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
                 "http://data-seed-pre-0-s1.binance.org:80",
-                BinanceDexEnvironment.TEST_NET.getHrp(),
-                BinanceDexEnvironment.TEST_NET.getValHrp()
+                BinanceDexEnvironment.TEST_NET.hrp,
+                BinanceDexEnvironment.TEST_NET.valHrp
             )
 
             val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET)
@@ -102,9 +103,9 @@ class RefundUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
                 true
             )
 
-            swapHistory.status = "REFUNDED"
+            swapHistory.status = SwapStatus.REFUNDED
 
-            swapHistoryRepository!!.save(swapHistory)
+            swapHistoryRepository.save(swapHistory)
         } catch (e: Exception) {
             println(
                 """

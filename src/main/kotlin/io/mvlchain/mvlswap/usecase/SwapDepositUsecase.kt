@@ -11,6 +11,7 @@ import com.binance.dex.api.client.encoding.Bech32
 import com.binance.dex.api.client.encoding.message.Token
 import io.mvlchain.mvlswap.boundary.dto.SwapDepositResponseDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
@@ -153,7 +154,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
             BinanceDexEnvironment.TEST_NET.getValHrp()
         )
 
-        var htltReq: HtltReq = HtltReq()
+        val htltReq: HtltReq = HtltReq()
         htltReq.recipient = swapHistory.receiverAddr
         htltReq.recipientOtherChain = swapHistory.erc20ChainAddr
         htltReq.senderOtherChain = swapHistory.erc20SenderAddr
@@ -168,16 +169,16 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
 
         val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET)
 
-        var listTxMetadata: List<TransactionMetadata> = binanceDexApiNodeClient.htlt(htltReq, wallet, TransactionOption.DEFAULT_INSTANCE, true)
+        val listTxMetadata: List<TransactionMetadata> = binanceDexApiNodeClient.htlt(htltReq, wallet, TransactionOption.DEFAULT_INSTANCE, true)
 
         val bep2SwapID = listTxMetadata[0].log.split(" ")[3]
         println("bep2SwapID:" + bep2SwapID)
 
         swapHistory.bnbChainSwapId = bep2SwapID
 
-        swapHistory.status = "DEPOSITED"
+        swapHistory.status = SwapStatus.DEPOSITED
 
-        swapHistoryRepository!!.save(swapHistory)
+        swapHistoryRepository.save(swapHistory)
 
         return SwapDepositResponseDto(
             erc20SwapID = erc20SwapID,

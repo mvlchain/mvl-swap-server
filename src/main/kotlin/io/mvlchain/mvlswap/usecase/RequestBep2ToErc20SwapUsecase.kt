@@ -7,6 +7,7 @@ import com.binance.dex.api.client.encoding.Bech32
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20ResponseDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.model.SwapType
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
@@ -68,12 +69,12 @@ class RequestBep2ToErc20SwapUsecase(
         swap.randomNumberHash = atomicSwap.randomNumberHash
         swap.receiverAddr = ETHProvider.getDeputyBep2Address()
         swap.senderAddr = atomicSwap.from
-        swap.status = "REQUESTED"
+        swap.status = SwapStatus.REQUESTED
         swap.timestamp = atomicSwap.timestamp
         swap.type = SwapType.TO_ERC20
         swap.expireHeight = 1000
 
-        swapHistoryRepository!!.save(swap)
+        swapHistoryRepository.save(swap)
 
         // //////////////////////////////////////////////////
         // <-- Regist htlt to Ethereum
