@@ -5,39 +5,30 @@ import com.binance.dex.api.client.BinanceDexApiNodeClient
 import com.binance.dex.api.client.BinanceDexEnvironment
 import com.binance.dex.api.client.Wallet
 import com.binance.dex.api.client.domain.TransactionMetadata
-import com.binance.dex.api.client.domain.broadcast.HtltReq
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
-import com.binance.dex.api.client.encoding.Bech32
-import com.binance.dex.api.client.encoding.message.Token
 import io.mvlchain.mvlswap.model.SwapHistory
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
 import org.web3j.abi.FunctionEncoder
-import org.web3j.abi.FunctionReturnDecoder
-import org.web3j.abi.TypeReference
-import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
-import org.web3j.abi.datatypes.generated.Bytes20
 import org.web3j.abi.datatypes.generated.Bytes32
-import org.web3j.abi.datatypes.generated.Uint256
-import org.web3j.abi.datatypes.generated.Uint64
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount
 import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.util.*
+import java.util.Collections
+import java.util.Optional
 
 @Component
-class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
+class RefundUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
     private val GetProviderDev: String = ETHProvider.getErc20Provider()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
@@ -52,7 +43,7 @@ class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
 
             val swapHistory: SwapHistory = swapHistoryRepository.findByRandomNumberHash(hash)!!
 
-            //ERC20 refund
+            // ERC20 refund
             val swapId = swapHistory.erc20ChainSwapId
             val bytes32SwapID = Numeric.hexStringToByteArray(swapId)
 
@@ -93,8 +84,8 @@ class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
                 Thread.sleep(3000) // Wait 3 sec
             } while (!transactionReceipt!!.isPresent)
 
-            ///////////////////////////////////////////////////////////////////////////////////////
-            //<-- binance refund
+            // /////////////////////////////////////////////////////////////////////////////////////
+            // <-- binance refund
 
             val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
                 "http://data-seed-pre-0-s1.binance.org:80",
@@ -102,24 +93,24 @@ class RefundUsecase (private val swapHistoryRepository: SwapHistoryRepository) {
                 BinanceDexEnvironment.TEST_NET.getValHrp()
             )
 
-            val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET )
+            val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET)
 
-            var listTxMetadata:List<TransactionMetadata> = binanceDexApiNodeClient.refundHtlt(
+            var listTxMetadata: List<TransactionMetadata> = binanceDexApiNodeClient.refundHtlt(
                 swapHistory.bnbChainSwapId,
                 wallet,
                 TransactionOption.DEFAULT_INSTANCE,
-                true)
+                true
+            )
 
             swapHistory.status = "REFUNDED"
 
             swapHistoryRepository!!.save(swapHistory)
-
         } catch (e: Exception) {
             println(
                 """
             Exception: ${e.message}
             
-            """.trimIndent()
+                """.trimIndent()
             )
             e.printStackTrace()
         }

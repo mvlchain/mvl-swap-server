@@ -6,7 +6,6 @@ import com.binance.dex.api.client.BinanceDexEnvironment
 import com.binance.dex.api.client.encoding.Bech32
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20ResponseDto
-import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.model.SwapHistory
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
@@ -33,7 +32,8 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
+import java.util.Collections
+import java.util.Optional
 
 @Component
 class RequestBep2ToErc20SwapUsecase(
@@ -43,7 +43,7 @@ class RequestBep2ToErc20SwapUsecase(
 
     fun execute(swapBep2ToErc20RequestDto: SwapBep2ToErc20RequestDto): SwapBep2ToErc20ResponseDto {
 
-        val Fee:String="0"
+        val Fee: String = "0"
 
         val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
             "http://data-seed-pre-1-s3.binance.org:80",
@@ -53,8 +53,7 @@ class RequestBep2ToErc20SwapUsecase(
 
         val atomicSwap = binanceDexApiNodeClient.getSwapByID(swapBep2ToErc20RequestDto.bep2SwapID)
 
-
-        val fee:String = "0"
+        val fee: String = "0"
 
         val outAmountFromSender = atomicSwap.outAmount.get(0).amount
         val InAmountToRecipient = BigDecimal(outAmountFromSender).subtract(BigDecimal(Fee)).toPlainString()
@@ -75,41 +74,40 @@ class RequestBep2ToErc20SwapUsecase(
 
         swapHistoryRepository!!.save(swap)
 
-
-        ////////////////////////////////////////////////////
-        //<-- Regist htlt to Ethereum
+        // //////////////////////////////////////////////////
+        // <-- Regist htlt to Ethereum
 
         val hash = atomicSwap.randomNumberHash
 
         val swapHistory: SwapHistory = swapHistoryRepository.findByRandomNumberHash(hash)!!
 
-        //ERC20 htlt
-        //1. _randomNumberHash
+        // ERC20 htlt
+        // 1. _randomNumberHash
         val randomNumberHash = Numeric.hexStringToByteArray(hash)
-        //2. _timestamp
+        // 2. _timestamp
         val timeStamp = swapHistory.timestamp
-        //3. _heightSpan
+        // 3. _heightSpan
         val heightSpan = swapHistory.expireHeight
-        //4. _recipientAddr Erc20
+        // 4. _recipientAddr Erc20
         val recipientAddr = swapHistory.erc20ChainAddr
 
-        //5. _bep2SenderAddr
-        val bep2SenderB32Data: Bech32.Bech32Data? = Bech32.decode( swapHistory.senderAddr)
-        val strBep2SenderB32Data:String = swapHistory.senderAddr!!.substring(bep2SenderB32Data!!.hrp.length)
+        // 5. _bep2SenderAddr
+        val bep2SenderB32Data: Bech32.Bech32Data? = Bech32.decode(swapHistory.senderAddr)
+        val strBep2SenderB32Data: String = swapHistory.senderAddr!!.substring(bep2SenderB32Data!!.hrp.length)
         val bep2SenderAddr = Numeric.hexStringToByteArray(strBep2SenderB32Data)
 
-        //6. _bep2RecipientAddr
-        val bep2RecipientB32Data: Bech32.Bech32Data? = Bech32.decode( swapHistory.receiverAddr)
-        val strBep2RecipientB32Data:String = swapHistory.receiverAddr!!.substring(bep2RecipientB32Data!!.hrp.length)
-        val bep2RecipientAddr  = Numeric.hexStringToByteArray(strBep2RecipientB32Data)
+        // 6. _bep2RecipientAddr
+        val bep2RecipientB32Data: Bech32.Bech32Data? = Bech32.decode(swapHistory.receiverAddr)
+        val strBep2RecipientB32Data: String = swapHistory.receiverAddr!!.substring(bep2RecipientB32Data!!.hrp.length)
+        val bep2RecipientAddr = Numeric.hexStringToByteArray(strBep2RecipientB32Data)
 
-        //7. _outAmount
+        // 7. _outAmount
         val outAmount = BigInteger(swapHistory.outAmountFromSender)
-        //8. _bep2Amount
+        // 8. _bep2Amount
         val bep2Amount = BigInteger(swapHistory.inAmountToRecipient)
 
-        //4. _recipientAddr Erc20
-        //val refundRecipientAddr = swapHistory.refundRecipientAddr
+        // 4. _recipientAddr Erc20
+        // val refundRecipientAddr = swapHistory.refundRecipientAddr
         val refundRecipientAddr = ETHProvider.getDeputyErc20Address()
 
         val htltFunction = Function(
@@ -157,8 +155,8 @@ class RequestBep2ToErc20SwapUsecase(
             Thread.sleep(3000) // Wait 3 sec
         } while (!transactionReceipt!!.isPresent)
 
-        ///////////////////////////////////////////////////////////////////////////////////////
-        //<-- read SwapId
+        // /////////////////////////////////////////////////////////////////////////////////////
+        // <-- read SwapId
 
         val typeReference_0: TypeReference<Bytes32?> = object : TypeReference<Bytes32?>() {}
         val references: List<TypeReference<*>> = listOf(typeReference_0)
@@ -186,7 +184,7 @@ class RequestBep2ToErc20SwapUsecase(
         )
 
         val erc20SwapID = javax.xml.bind.DatatypeConverter.printHexBinary(decode.get(0).value as ByteArray?)
-        println("erc20SwapID: " + erc20SwapID )
+        println("erc20SwapID: " + erc20SwapID)
 
         swapHistory.erc20ChainSwapId = erc20SwapID
 
@@ -196,6 +194,3 @@ class RequestBep2ToErc20SwapUsecase(
         )
     }
 }
-
-
-

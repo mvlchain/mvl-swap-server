@@ -9,5 +9,4 @@ class MvlSwapApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }

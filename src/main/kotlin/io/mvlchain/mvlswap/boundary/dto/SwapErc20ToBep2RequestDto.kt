@@ -3,7 +3,7 @@ package io.mvlchain.mvlswap.boundary.dto
 import org.jetbrains.annotations.NotNull
 import java.math.BigDecimal
 
-data class SwapErc20ToBep2RequestDto (
+data class SwapErc20ToBep2RequestDto(
     @NotNull
     val erc20OutAmountFromSender: BigDecimal,
     @NotNull

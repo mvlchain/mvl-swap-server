@@ -6,19 +6,14 @@ import com.binance.dex.api.client.BinanceDexEnvironment
 import com.binance.dex.api.client.Wallet
 import com.binance.dex.api.client.domain.TransactionMetadata
 import com.binance.dex.api.client.domain.broadcast.TransactionOption
-import com.binance.dex.api.client.encoding.message.bridge.ClaimTypes
 import io.mvlchain.mvlswap.boundary.dto.SwapClaimDto
 import io.mvlchain.mvlswap.model.SwapHistory
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
 import org.web3j.abi.FunctionEncoder
-import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
-import org.web3j.abi.datatypes.generated.Bytes20
 import org.web3j.abi.datatypes.generated.Bytes32
-import org.web3j.abi.datatypes.generated.Uint256
-import org.web3j.abi.datatypes.generated.Uint64
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
@@ -30,7 +25,8 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.util.*
+import java.util.Collections
+import java.util.Optional
 
 @Component
 class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
@@ -48,7 +44,7 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
 
             val swapHistory: SwapHistory = swapHistoryRepository.findByRandomNumberHash(hash)!!
 
-            //ERC20 claim
+            // ERC20 claim
             val swapId = swapHistory.erc20ChainSwapId
             val bytes32SwapID = Numeric.hexStringToByteArray(swapId)
 
@@ -95,8 +91,8 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
             } while (!transactionReceipt!!.isPresent)
             println("transactionReceipt: " + transactionReceipt)
 
-            ///////////////////////////////////////////////////////////////////////////////////////
-            //<-- binance claim
+            // /////////////////////////////////////////////////////////////////////////////////////
+            // <-- binance claim
 
             val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
                 "http://data-seed-pre-0-s1.binance.org:80",
@@ -104,28 +100,24 @@ class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository)
                 BinanceDexEnvironment.TEST_NET.getValHrp()
             )
 
-            val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET )
+            val wallet: Wallet = Wallet(Bep2PrivateKey, BinanceDexEnvironment.TEST_NET)
 
-            var listTxMetadata:List<TransactionMetadata> = binanceDexApiNodeClient.claimHtlt(
-                swapHistory.bnbChainSwapId, bytes32RandomNumber, wallet, TransactionOption.DEFAULT_INSTANCE, true )
-
+            var listTxMetadata: List<TransactionMetadata> = binanceDexApiNodeClient.claimHtlt(
+                swapHistory.bnbChainSwapId, bytes32RandomNumber, wallet, TransactionOption.DEFAULT_INSTANCE, true
+            )
 
             swapHistory.randomNumber = swapClaimDto.randomNumber
             swapHistory.status = "CLAIMED"
 
             swapHistoryRepository!!.save(swapHistory)
-
-
-
         } catch (e: Exception) {
             println(
                 """
             Exception: ${e.message}
             
-            """.trimIndent()
+                """.trimIndent()
             )
             e.printStackTrace()
         }
-
     }
 }

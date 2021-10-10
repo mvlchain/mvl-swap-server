@@ -6,8 +6,8 @@ class ETHProvider {
         private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
         private val Erc20Provider = "0x0000000000000000000000000000000000000000/"
 
-        private val DeputyErc20Address:String="0x0000000000000000000000000000000000000000"
-        private val DeputyBep2Address:String="0x0000000000000000000000000000000000000000"
+        private val DeputyErc20Address: String = "0x0000000000000000000000000000000000000000"
+        private val DeputyBep2Address: String = "0x0000000000000000000000000000000000000000"
 
         private val GasPrice = "60"
         private val GasLimit = 480000L
@@ -41,6 +41,5 @@ class ETHProvider {
         fun getErc20SwapContractAddr(): String {
             return Erc20SwapContractAddr
         }
-
     }
 }
