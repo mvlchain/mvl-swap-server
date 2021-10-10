@@ -2,16 +2,10 @@ package io.mvlchain.mvlswap.usecase
 
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
-
 import org.web3j.abi.datatypes.Function
-
 import org.web3j.protocol.admin.Admin
-
 import org.web3j.protocol.http.HttpService
-
 import java.io.IOException
-
-
 
 @Component
 class EthereumService {
@@ -33,7 +27,5 @@ class EthereumService {
 
     @Throws(IOException::class)
     fun ethCall(function: Function) {
-
     }
-
 }

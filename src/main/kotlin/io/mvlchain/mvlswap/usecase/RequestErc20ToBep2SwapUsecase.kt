@@ -13,37 +13,35 @@ class RequestErc20ToBep2SwapUsecase(
     private val swapHistoryRepository: SwapHistoryRepository
 ) {
 
-
     companion object {
-        private val Fee:String="0"
-        private val DeputyErc20Address:String="0xd2E5C581A406F28a3DC8Ab0313B68950B58dd4AD"
-        private val DeputyBep2Address:String="tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8"
-
+        private val Fee: String = "0"
+        private val DeputyErc20Address: String = "0xd2E5C581A406F28a3DC8Ab0313B68950B58dd4AD"
+        private val DeputyBep2Address: String = "tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8"
     }
 
     fun execute(swapErc20ToBep2RequestDto: SwapErc20ToBep2RequestDto): SwapResponeDto {
 
-        val fee:String = "0"
+        val fee: String = "0"
 
         val InAmountToRecipient = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee))
 
         val swap = SwapHistory()
 
         swap.erc20SenderAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
-        //<--V
+        // <--V
         swap.deputyOutAmount = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee)).toPlainString()
-        //<--V
+        // <--V
         swap.erc20ChainAddr = DeputyErc20Address
-        //<--V
+        // <--V
         swap.inAmountToRecipient = InAmountToRecipient.toString()
-        //<--V
+        // <--V
         swap.outAmountFromSender = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.toPlainString()
-        //<--V
+        // <--V
         swap.randomNumberHash = swapErc20ToBep2RequestDto.randomNumberHash
-        //<--V
-        //Bep2 ReceipientAddr: tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8
+        // <--V
+        // Bep2 ReceipientAddr: tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8
         swap.receiverAddr = swapErc20ToBep2RequestDto.bep2RecipientAddr
-        //<--V
+        // <--V
         swap.senderAddr = DeputyBep2Address
         swap.status = "REQUESTED"
         swap.timestamp = swapErc20ToBep2RequestDto.timestamp
@@ -57,6 +55,3 @@ class RequestErc20ToBep2SwapUsecase(
         return SwapResponeDto(depositAddress = DeputyErc20Address, amount = InAmountToRecipient)
     }
 }
-
-
-

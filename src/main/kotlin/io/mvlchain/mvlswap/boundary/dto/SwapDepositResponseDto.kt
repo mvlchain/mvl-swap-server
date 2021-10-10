@@ -1,7 +1,5 @@
 package io.mvlchain.mvlswap.boundary.dto
 
-import java.math.BigDecimal
-
 data class SwapDepositResponseDto(
     val erc20SwapID: String,
     val erc20TxHash: String,

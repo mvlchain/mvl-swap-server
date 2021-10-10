@@ -1,10 +1,20 @@
 package io.mvlchain.mvlswap.boundary.controller
 
-import io.mvlchain.mvlswap.boundary.dto.*
+import io.mvlchain.mvlswap.boundary.dto.SwapAddressResponseDto
+import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20RequestDto
+import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20ResponseDto
+import io.mvlchain.mvlswap.boundary.dto.SwapClaimDto
+import io.mvlchain.mvlswap.boundary.dto.SwapDepositResponseDto
+import io.mvlchain.mvlswap.boundary.dto.SwapErc20ToBep2RequestDto
+import io.mvlchain.mvlswap.boundary.dto.SwapHistoryResponseDto
+import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.model.SwapStatus
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
-import io.mvlchain.mvlswap.usecase.*
-
+import io.mvlchain.mvlswap.usecase.RefundUsecase
+import io.mvlchain.mvlswap.usecase.RequestBep2ToErc20SwapUsecase
+import io.mvlchain.mvlswap.usecase.RequestErc20ToBep2SwapUsecase
+import io.mvlchain.mvlswap.usecase.SwapClaimUsecase
+import io.mvlchain.mvlswap.usecase.SwapDepositUsecase
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,12 +33,10 @@ class SwapController(
     private val swapClaimUsecase: SwapClaimUsecase,
     private val requestErc20ToBep2SwapUsecase: RequestErc20ToBep2SwapUsecase,
     private val requestBep2ToErc20SwapUsecase: RequestBep2ToErc20SwapUsecase
-
-
 ) {
     private val GETPROVIDER_DEV: String = ETHProvider.getErc20Provider()
-    private val Erc20SwapDepositAddress:String="0x000000"
-    private val Bep2DepositAddress:String="tbnb0000000"
+    private val Erc20SwapDepositAddress: String = "0x000000"
+    private val Bep2DepositAddress: String = "tbnb0000000"
 
     @PostMapping("/erc20")
     fun requestSwap(
@@ -45,7 +53,8 @@ class SwapController(
     }
 
     @PostMapping("/{hash}/deposit")
-    fun deposit(@PathVariable hash: String
+    fun deposit(
+        @PathVariable hash: String
     ): SwapDepositResponseDto {
         return swapDepositUsecase.execute(hash)
     }
@@ -63,33 +72,22 @@ class SwapController(
     @GetMapping("/{hash}")
     fun findSwapHistoryByHash(
         @PathVariable hash: String
-    ): SwapHistoryResponseDto? {
-
-
+    ): SwapHistoryResponseDto {
         val swapHistory = swapRepository.findByRandomNumberHash(hash) ?: throw Exception("not found")
-
-        val swapHistoryResponseDto = SwapHistoryResponseDto(hash = hash, type = swapHistory.type!!, status = SwapStatus.valueOf(swapHistory.status.toString()))
-        return swapHistoryResponseDto
+        return SwapHistoryResponseDto(hash = hash, type = swapHistory.type!!, status = SwapStatus.valueOf(swapHistory.status.toString()))
     }
 
     @GetMapping("/depositAddress")
     fun getSwapAddress(): SwapAddressResponseDto {
-
         return SwapAddressResponseDto(Erc20SwapDepositAddress = Erc20SwapDepositAddress, Bep2DepositAddress = Bep2DepositAddress)
     }
 
-    //swapHistory/{hash}
+    // swapHistory/{hash}
     @GetMapping("/Sender/{sender}")
     fun findSwapHistoryBySender(
         @PathVariable sender: String
     ): SwapHistoryResponseDto {
-
         val swapHistory = swapRepository.findByErc20SenderAddr(sender) ?: throw Exception("not found")
         TODO("implement")
-
-        val swapHR: SwapHistoryResponseDto
-
-        return swapHR
     }
-
 }
