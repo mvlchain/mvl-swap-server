@@ -7,6 +7,7 @@ import com.binance.dex.api.client.encoding.Bech32
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapBep2ToErc20ResponseDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapType
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import io.mvlchain.mvlswap.util.ETHProvider
 import org.springframework.stereotype.Component
@@ -69,7 +70,7 @@ class RequestBep2ToErc20SwapUsecase(
         swap.senderAddr = atomicSwap.from
         swap.status = "REQUESTED"
         swap.timestamp = atomicSwap.timestamp
-        swap.type = "FromBep2ToErc20"
+        swap.type = SwapType.TO_ERC20
         swap.expireHeight = 1000
 
         swapHistoryRepository!!.save(swap)

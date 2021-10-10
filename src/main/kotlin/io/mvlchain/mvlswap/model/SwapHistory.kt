@@ -8,6 +8,8 @@ import java.time.Instant
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EntityListeners
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -21,7 +23,8 @@ class SwapHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 
-    var type: String? = null
+    @Enumerated(EnumType.STRING)
+    var type: SwapType = SwapType.TO_BEP2
     var bnbChainSwapId: String? = null
     var erc20ChainSwapId: String? = null
     var senderAddr: String? = null

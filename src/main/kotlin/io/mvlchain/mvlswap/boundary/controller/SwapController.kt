@@ -74,7 +74,7 @@ class SwapController(
         @PathVariable hash: String
     ): SwapHistoryResponseDto {
         val swapHistory = swapRepository.findByRandomNumberHash(hash) ?: throw Exception("not found")
-        return SwapHistoryResponseDto(hash = hash, type = swapHistory.type!!, status = SwapStatus.valueOf(swapHistory.status.toString()))
+        return SwapHistoryResponseDto(hash = hash, type = swapHistory.type, status = SwapStatus.valueOf(swapHistory.status.toString()))
     }
 
     @GetMapping("/depositAddress")

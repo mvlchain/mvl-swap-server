@@ -3,6 +3,7 @@ package io.mvlchain.mvlswap.usecase
 import io.mvlchain.mvlswap.boundary.dto.SwapErc20ToBep2RequestDto
 import io.mvlchain.mvlswap.boundary.dto.SwapResponeDto
 import io.mvlchain.mvlswap.model.SwapHistory
+import io.mvlchain.mvlswap.model.SwapType
 import io.mvlchain.mvlswap.repository.SwapHistoryRepository
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -23,19 +24,19 @@ class RequestErc20ToBep2SwapUsecase(
 
         val fee: String = "0"
 
-        val InAmountToRecipient = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee))
+        val amountToRecipient = swapErc20ToBep2RequestDto.erc20OutAmountFromSender.subtract(BigDecimal(Fee))
 
         val swap = SwapHistory()
 
         swap.erc20SenderAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
         // <--V
-        swap.deputyOutAmount = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee)).toPlainString()
+        swap.deputyOutAmount = swapErc20ToBep2RequestDto.erc20OutAmountFromSender.subtract(BigDecimal(Fee)).toPlainString()
         // <--V
         swap.erc20ChainAddr = DeputyErc20Address
         // <--V
-        swap.inAmountToRecipient = InAmountToRecipient.toString()
+        swap.inAmountToRecipient = amountToRecipient.toString()
         // <--V
-        swap.outAmountFromSender = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.toPlainString()
+        swap.outAmountFromSender = swapErc20ToBep2RequestDto.erc20OutAmountFromSender.toPlainString()
         // <--V
         swap.randomNumberHash = swapErc20ToBep2RequestDto.randomNumberHash
         // <--V
@@ -45,13 +46,13 @@ class RequestErc20ToBep2SwapUsecase(
         swap.senderAddr = DeputyBep2Address
         swap.status = "REQUESTED"
         swap.timestamp = swapErc20ToBep2RequestDto.timestamp
-        swap.type = "FromErc20ToBep2"
+        swap.type = SwapType.TO_BEP2
         swap.expireHeight = 1000
 
         swap.refundRecipientAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
 
-        swapHistoryRepository!!.save(swap)
+        swapHistoryRepository.save(swap)
 
-        return SwapResponeDto(depositAddress = DeputyErc20Address, amount = InAmountToRecipient)
+        return SwapResponeDto(depositAddress = DeputyErc20Address, amount = amountToRecipient)
     }
 }
