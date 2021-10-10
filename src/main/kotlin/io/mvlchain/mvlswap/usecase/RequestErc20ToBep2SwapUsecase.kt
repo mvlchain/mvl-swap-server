@@ -50,6 +50,8 @@ class RequestErc20ToBep2SwapUsecase(
         swap.type = "FromErc20ToBep2"
         swap.expireHeight = 1000
 
+        swap.refundRecipientAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
+
         swapHistoryRepository!!.save(swap)
 
         return SwapResponeDto(depositAddress = DeputyErc20Address, amount = InAmountToRecipient)

@@ -24,7 +24,7 @@ class EthereumService {
     private val pwd = "0x0000000000000000000000000000000000000000"
 
     private var web3j: Admin? = null
-    private val GETPROVIDER_DEV: String = ETHProvider.getAPINode("ETH")
+    private val GETPROVIDER_DEV: String = ETHProvider.getErc20Provider()
 
     fun EthereumService() {
 

@@ -38,6 +38,7 @@ class SwapHistory {
     var randomNumber: String? = null
     var status: String? = null
     var erc20SenderAddr: String? = null
+    var refundRecipientAddr: String? = null
 
     @CreatedDate
     @Column(updatable = false)

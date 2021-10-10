@@ -41,7 +41,7 @@ import java.util.*
 @Component
 class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
-    private val GetProviderDev: String = ETHProvider.getAPINode("ETH")
+    private val GetProviderDev: String = ETHProvider.getDeputyErc20Address()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Bep2PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Erc20SwapContractAddr = "0x0000000000000000000000000000000000000000"
@@ -69,6 +69,9 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
         //8. _bep2Amount
         val bep2Amount = BigInteger(swapHistory.inAmountToRecipient)
 
+        //4. _recipientAddr Erc20
+        val refundRecipientAddr = swapHistory.refundRecipientAddr
+
             val htltFunction = Function(
                 "htlt",
                 listOf(
@@ -79,7 +82,8 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
                     Bytes20(bep2SenderAddr),
                     Bytes20(bep2RecipientAddr),
                     Uint256(outAmount),
-                    Uint256(bep2Amount)
+                Uint256(bep2Amount),
+                Address(refundRecipientAddr)
                 ),
                 Collections.emptyList()
             )

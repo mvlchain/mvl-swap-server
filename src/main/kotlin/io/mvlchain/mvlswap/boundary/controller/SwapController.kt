@@ -26,7 +26,7 @@ class SwapController(
 
 
 ) {
-    private val GETPROVIDER_DEV: String = ETHProvider.getAPIHost("ETH");
+    private val GETPROVIDER_DEV: String = ETHProvider.getErc20Provider()
     private val Erc20SwapDepositAddress:String="0x000000"
     private val Bep2DepositAddress:String="tbnb0000000"
 
@@ -40,7 +40,7 @@ class SwapController(
     @PostMapping("/bep2")
     fun requestBep2ToErc20Swap(
         @RequestBody @Validated swapBep2ToErc20RequestDto: SwapBep2ToErc20RequestDto,
-    ): SwapResponeDto {
+    ): SwapBep2ToErc20ResponseDto {
         return requestBep2ToErc20SwapUsecase.execute(swapBep2ToErc20RequestDto)
     }
 
