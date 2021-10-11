@@ -41,9 +41,12 @@ class RequestBep2ToErc20SwapUsecase(
     private val swapHistoryRepository: SwapHistoryRepository
 ) {
 
-    fun execute(swapBep2ToErc20RequestDto: SwapBep2ToErc20RequestDto): SwapBep2ToErc20ResponseDto {
+    private val Erc20BasicUnitBigDecimal = BigDecimal("1000000000000000000")
+    private val Erc20BasicUnitBigInteger = BigInteger("1000000000000000000")
+    private val Bep2BacicUnitBigDecimal = BigDecimal("100000000")
+    private val Bep2BacicUnitInt = 100000000
 
-        val Fee: String = "0"
+    fun execute(swapBep2ToErc20RequestDto: SwapBep2ToErc20RequestDto): SwapBep2ToErc20ResponseDto {
 
         val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
             "http://data-seed-pre-1-s3.binance.org:80",
@@ -53,17 +56,16 @@ class RequestBep2ToErc20SwapUsecase(
 
         val atomicSwap = binanceDexApiNodeClient.getSwapByID(swapBep2ToErc20RequestDto.bep2SwapID)
 
-        val fee: String = "0"
 
         val outAmountFromSender = atomicSwap.outAmount.get(0).amount
-        val InAmountToRecipient = BigDecimal(outAmountFromSender).subtract(BigDecimal(Fee)).toPlainString()
 
         val swap = SwapHistory()
         swap.erc20SenderAddr = ETHProvider.getDeputyErc20Address()
-        swap.deputyOutAmount = BigDecimal(outAmountFromSender).subtract(BigDecimal(Fee)).toPlainString()
+        //Bep2에서 나가는 갯수 * 기본단위 1e*8
+        swap.deputyOutAmount = BigDecimal(outAmountFromSender).divide(Bep2BacicUnitBigDecimal).toPlainString()
         swap.erc20ChainAddr = swap.erc20ChainAddr
-        swap.inAmountToRecipient = InAmountToRecipient.toString()
-        swap.outAmountFromSender = atomicSwap.outAmount.toString()
+        swap.inAmountToRecipient = BigDecimal(outAmountFromSender).divide(Bep2BacicUnitBigDecimal).toPlainString()
+        swap.outAmountFromSender = atomicSwap.outAmount.get(0).amount.div(Bep2BacicUnitInt).toString()
         swap.randomNumberHash = atomicSwap.randomNumberHash
         swap.receiverAddr = ETHProvider.getDeputyBep2Address()
         swap.senderAddr = atomicSwap.from
@@ -102,12 +104,11 @@ class RequestBep2ToErc20SwapUsecase(
         val bep2RecipientAddr = Numeric.hexStringToByteArray(strBep2RecipientB32Data)
 
         // 7. _outAmount
-        val outAmount = BigInteger(swapHistory.outAmountFromSender)
+        val outAmount = BigInteger(swapHistory.outAmountFromSender).multiply(Erc20BasicUnitBigInteger)
         // 8. _bep2Amount
-        val bep2Amount = BigInteger(swapHistory.inAmountToRecipient)
+        val bep2Amount = BigInteger(swapHistory.inAmountToRecipient).multiply(Erc20BasicUnitBigInteger)
 
-        // 4. _recipientAddr Erc20
-        // val refundRecipientAddr = swapHistory.refundRecipientAddr
+        // 9. _recipientAddr Erc20
         val refundRecipientAddr = ETHProvider.getDeputyErc20Address()
 
         val htltFunction = Function(
