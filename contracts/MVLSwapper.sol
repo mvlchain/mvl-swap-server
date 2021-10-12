@@ -29,15 +29,16 @@ contract ERC20AtomicSwapper {
     }
 
     // Events
-    event HTLT(address indexed _msgSender, address indexed _recipientAddr, bytes32 indexed _swapID, bytes32 _randomNumberHash, uint64 _timestamp, bytes20 _bep2Addr, uint256 _expireHeight, uint256 _outAmount, uint256 _bep2Amount, address _refundRecipientAddr); 
-    event Refunded(address indexed _msgSender, address indexed _recipientAddr, bytes32 indexed _swapID, bytes32 _randomNumberHash, address _refundRecipientAddr); 
-    event Claimed(address indexed _msgSender, address indexed _recipientAddr, bytes32 indexed _swapID, bytes32 _randomNumberHash, bytes32 _randomNumber);
+    event HTLT(address indexed _sender, bytes32 indexed _swapID, bytes32 _randomNumberHash, uint64 _timestamp, bytes20 _bep2Addr, uint256 _expireHeight, uint256 _outAmount, uint256 _bep2Amount, address _refundRecipientAddr);
+    event Refunded(address indexed _sender, address indexed _recipientAddr, bytes32 indexed _swapID, bytes32 _randomNumberHash, address _refundRecipientAddr);
+    event Claimed(address indexed _sender, address indexed _recipientAddr, bytes32 indexed _swapID, bytes32 _randomNumberHash, bytes32 _randomNumber);
 
     // Storage
     mapping (bytes32 => Swap) private swaps;
     mapping (bytes32 => States) private swapStates;
 
     address public ERC20ContractAddr;
+    address public ERC20ApplicationAddr;
 
     /// @notice Throws if the swap is not open.
     modifier onlyOpenSwaps(bytes32 _swapID) {
@@ -64,8 +65,9 @@ contract ERC20AtomicSwapper {
     }
 
     /// @param _erc20Contract The ERC20 contract address
-    constructor(address _erc20Contract) public {
+    constructor(address _erc20Contract, address _erc20ApplicationAddr) public {
         ERC20ContractAddr = _erc20Contract;
+        ERC20ApplicationAddr = _erc20ApplicationAddr;
     }
 
     /// @notice htlt locks asset to contract address and create an atomic swap.
@@ -82,6 +84,7 @@ contract ERC20AtomicSwapper {
         bytes32 _randomNumberHash,
         uint64  _timestamp,
         uint256 _heightSpan,
+        address _senderAddr,
         address _recipientAddr,
         bytes20 _bep2SenderAddr,
         bytes20 _bep2RecipientAddr,
@@ -89,11 +92,12 @@ contract ERC20AtomicSwapper {
         uint256 _bep2Amount,
         address _refundRecipientAddr
     ) external returns (bool) {
-        bytes32 swapID = calSwapID(_randomNumberHash, msg.sender, _bep2SenderAddr);
+        bytes32 swapID = calSwapID(_randomNumberHash, _senderAddr, _bep2SenderAddr);
         require(swapStates[swapID] == States.INVALID, "swap is opened previously");
         // Assume average block time interval is 10 second
         // The heightSpan period should be more than 10 minutes and less than one week
         require(_heightSpan >= 60 && _heightSpan <= 60480, "_heightSpan should be in [60, 60480]");
+        require(_senderAddr != address(0), "_senderAddr should not be zero");
         require(_recipientAddr != address(0), "_recipientAddr should not be zero");
         require(_outAmount > 0, "_outAmount must be more than 0");
         require(_timestamp > now - 1800 && _timestamp < now + 900, "Timestamp can neither be 15 minutes ahead of the current time, nor 30 minutes later");
@@ -105,7 +109,7 @@ contract ERC20AtomicSwapper {
             expireHeight: _heightSpan + block.number,
             randomNumberHash: _randomNumberHash,
             timestamp: _timestamp,
-            sender: msg.sender,
+            sender: _senderAddr,
             recipientAddr: _recipientAddr,
             refundRecipientAddr: _refundRecipientAddr
         });
@@ -114,10 +118,10 @@ contract ERC20AtomicSwapper {
         swapStates[swapID] = States.OPEN;
 
         // Transfer ERC20 token to the swap contract
-        require(ERC20(ERC20ContractAddr).transferFrom(msg.sender, address(this), _outAmount), "failed to transfer client asset to swap contract address");    
+        require(ERC20(ERC20ContractAddr).transferFrom(_senderAddr, address(this), _outAmount), "failed to transfer client asset to swap contract address");  
 
         // Emit initialization event
-        emit HTLT(msg.sender, _recipientAddr, swapID, _randomNumberHash, _timestamp, _bep2RecipientAddr, swap.expireHeight, _outAmount, _bep2Amount, _refundRecipientAddr); 
+        emit HTLT(_senderAddr, swapID, _randomNumberHash, _timestamp, _bep2RecipientAddr, swap.expireHeight, _outAmount, _bep2Amount, _refundRecipientAddr);
         return true;
     }
 
@@ -129,6 +133,7 @@ contract ERC20AtomicSwapper {
         // Complete the swap.
         swapStates[_swapID] = States.COMPLETED;
 
+        address senderAddr = swaps[_swapID].sender;
         address recipientAddr = swaps[_swapID].recipientAddr;
         uint256 outAmount = swaps[_swapID].outAmount;
         bytes32 randomNumberHash = swaps[_swapID].randomNumberHash;
@@ -139,7 +144,7 @@ contract ERC20AtomicSwapper {
         require(ERC20(ERC20ContractAddr).transfer(recipientAddr, outAmount), "Failed to transfer locked asset to recipient");
 
         // Emit completion event
-        emit Claimed(msg.sender, recipientAddr, _swapID, randomNumberHash, _randomNumber);
+        emit Claimed(senderAddr, recipientAddr, _swapID, randomNumberHash, _randomNumber);
 
         return true;
     }

@@ -17,40 +17,32 @@ class RequestErc20ToBep2SwapUsecase(
         private val Fee: String = "0"
         private val DeputyErc20Address: String = "0xd2E5C581A406F28a3DC8Ab0313B68950B58dd4AD"
         private val DeputyBep2Address: String = "tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8"
+        private val Erc20BasicUnit = BigDecimal("1000000000000000000")
+        private val Bep2BacicUnit = BigDecimal("100000000")
     }
 
     fun execute(swapErc20ToBep2RequestDto: SwapErc20ToBep2RequestDto): SwapResponeDto {
 
-        val fee: String = "0"
+        val InAmountToRecipient = swapErc20ToBep2RequestDto.erc20OutAmountFromSender
 
-        val InAmountToRecipient = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee))
+        val swapHistory = SwapHistory()
 
-        val swap = SwapHistory()
+        swapHistory.erc20SenderAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
+        swapHistory.deputyOutAmount = swapErc20ToBep2RequestDto.erc20OutAmountFromSender.toPlainString()
+        swapHistory.erc20ChainAddr = DeputyErc20Address
+        swapHistory.inAmountToRecipient = InAmountToRecipient.toString()
+        swapHistory.outAmountFromSender = swapErc20ToBep2RequestDto.erc20OutAmountFromSender.toPlainString()
+        swapHistory.randomNumberHash = swapErc20ToBep2RequestDto.randomNumberHash
+        swapHistory.receiverAddr = swapErc20ToBep2RequestDto.bep2RecipientAddr
+        swapHistory.senderAddr = DeputyBep2Address
+        swapHistory.status = "REQUESTED"
+        swapHistory.timestamp = swapErc20ToBep2RequestDto.timestamp
+        swapHistory.type = "FromErc20ToBep2"
+        swapHistory.expireHeight = 1000
 
-        swap.erc20SenderAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
-        // <--V
-        swap.deputyOutAmount = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.subtract(BigDecimal(Fee)).toPlainString()
-        // <--V
-        swap.erc20ChainAddr = DeputyErc20Address
-        // <--V
-        swap.inAmountToRecipient = InAmountToRecipient.toString()
-        // <--V
-        swap.outAmountFromSender = swapErc20ToBep2RequestDto.erc20OutAmountFromSender!!.toPlainString()
-        // <--V
-        swap.randomNumberHash = swapErc20ToBep2RequestDto.randomNumberHash
-        // <--V
-        // Bep2 ReceipientAddr: tbnb15fe7p6tsaf6gghpgdd4tdqm6kwtryd60rnt2s8
-        swap.receiverAddr = swapErc20ToBep2RequestDto.bep2RecipientAddr
-        // <--V
-        swap.senderAddr = DeputyBep2Address
-        swap.status = "REQUESTED"
-        swap.timestamp = swapErc20ToBep2RequestDto.timestamp
-        swap.type = "FromErc20ToBep2"
-        swap.expireHeight = 1000
+        swapHistory.refundRecipientAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
 
-        swap.refundRecipientAddr = swapErc20ToBep2RequestDto.erc20SenderAddr
-
-        swapHistoryRepository!!.save(swap)
+        swapHistoryRepository!!.save(swapHistory)
 
         return SwapResponeDto(depositAddress = DeputyErc20Address, amount = InAmountToRecipient)
     }

@@ -31,7 +31,7 @@ import java.util.Optional
 @Component
 class SwapClaimUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
-    private val GetProviderDev: String = ETHProvider.getDeputyErc20Address()
+    private val GetProviderDev: String = ETHProvider.getErc20Provider()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Bep2PrivateKey = "0x0000000000000000000000000000000000000000"
     private val GasPrice = "60"

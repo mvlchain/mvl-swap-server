@@ -34,6 +34,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.Collections
 import java.util.Optional
@@ -41,13 +42,18 @@ import java.util.Optional
 @Component
 class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepository) {
 
-    private val GetProviderDev: String = ETHProvider.getDeputyErc20Address()
+    private val GetProviderDev: String = ETHProvider.getErc20Provider()
     private val Erc20PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Bep2PrivateKey = "0x0000000000000000000000000000000000000000"
     private val Erc20SwapContractAddr = "0x0000000000000000000000000000000000000000"
     private val DeputyErc20Address: String = "0x0000000000000000000000000000000000000000"
     private val GasPrice = "60"
     private val GasLimit = 480000L
+
+    private val Erc20BasicUnitBigInteger = BigInteger("1000000000000000000")
+    private val Erc20BasicUnit = BigDecimal("1000000000000000000")
+    private val Bep2BacicUnit = BigDecimal("100000000")
+    private val Bep2BacicUnitInt = 100000000
 
     fun execute(hash: String): SwapDepositResponseDto {
 
@@ -56,18 +62,27 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
         val randomNumberHash = Numeric.hexStringToByteArray(hash)
         val timeStamp = swapHistory.timestamp
         val heightSpan = swapHistory.expireHeight
-        val recipientAddr = swapHistory.erc20ChainAddr
+        val senderAddr = swapHistory.erc20ChainAddr
+
+        // 4. _recipientAddr Erc20
+        val recipientAddr = ETHProvider.getErc20ApplicationWalletAddress()
+
+        // 5. _bep2SenderAddr
         val bep2SenderB32Data: Bech32.Bech32Data? = Bech32.decode(swapHistory.senderAddr)
         val strBep2SenderB32Data: String = swapHistory.senderAddr!!.substring(bep2SenderB32Data!!.hrp.length)
         val bep2SenderAddr = Numeric.hexStringToByteArray(strBep2SenderB32Data)
+
+        // 6. _bep2RecipientAddr
         val bep2RecipientB32Data: Bech32.Bech32Data? = Bech32.decode(swapHistory.receiverAddr)
         val strBep2RecipientB32Data: String = swapHistory.receiverAddr!!.substring(bep2RecipientB32Data!!.hrp.length)
         val bep2RecipientAddr = Numeric.hexStringToByteArray(strBep2RecipientB32Data)
 
         // 7. _outAmount
-        val outAmount = BigInteger(swapHistory.outAmountFromSender)
+        // <-- fix-decimal Bep2
+        val outAmount = BigInteger(swapHistory.outAmountFromSender).multiply(Erc20BasicUnitBigInteger)
         // 8. _bep2Amount
-        val bep2Amount = BigInteger(swapHistory.inAmountToRecipient)
+        // <-- fix-decimal Bep2
+        val bep2Amount = BigInteger(swapHistory.inAmountToRecipient).multiply(Erc20BasicUnitBigInteger)
 
         // 4. _recipientAddr Erc20
         val refundRecipientAddr = swapHistory.refundRecipientAddr
@@ -78,6 +93,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
                 Bytes32(randomNumberHash),
                 Uint64(timeStamp),
                 Uint256(heightSpan),
+                Address(senderAddr),
                 Address(recipientAddr),
                 Bytes20(bep2SenderAddr),
                 Bytes20(bep2RecipientAddr),
@@ -124,7 +140,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
             "calSwapID",
             listOf(
                 Bytes32(randomNumberHash),
-                Address(swapHistory.erc20SenderAddr),
+                Address(senderAddr),
                 Bytes20(bep2SenderAddr)
             ),
             references
@@ -148,7 +164,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
         swapHistory.erc20ChainSwapId = erc20SwapID
 
         val binanceDexApiNodeClient: BinanceDexApiNodeClient = BinanceDexApiClientFactory.newInstance().newNodeRpcClient(
-            "http://data-seed-pre-0-s1.binance.org:80",
+            "http://data-seed-pre-1-s3.binance.org:80",
             BinanceDexEnvironment.TEST_NET.getHrp(),
             BinanceDexEnvironment.TEST_NET.getValHrp()
         )
@@ -159,10 +175,10 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
         htltReq.senderOtherChain = swapHistory.erc20SenderAddr
         htltReq.randomNumberHash = randomNumberHash
         htltReq.timestamp = swapHistory.timestamp
-        val token: Token = Token("0x0000000000000000000000000000000000000000", swapHistory.inAmountToRecipient!!.toLong())
+        val token: Token = Token("0x0000000000000000000000000000000000000000", swapHistory.inAmountToRecipient!!.toLong().times(Bep2BacicUnitInt))
         val listToken: List<Token> = listOf(token)
         htltReq.outAmount = listToken
-        htltReq.expectedIncome = swapHistory.inAmountToRecipient
+        htltReq.expectedIncome = BigDecimal(swapHistory.inAmountToRecipient).multiply(Bep2BacicUnit).toPlainString()
         htltReq.heightSpan = swapHistory.expireHeight
         htltReq.isCrossChain = true
 
@@ -177,7 +193,7 @@ class SwapDepositUsecase(private val swapHistoryRepository: SwapHistoryRepositor
 
         swapHistory.status = "DEPOSITED"
 
-        swapHistoryRepository!!.save(swapHistory)
+        swapHistoryRepository.save(swapHistory)
 
         return SwapDepositResponseDto(
             erc20SwapID = erc20SwapID,
