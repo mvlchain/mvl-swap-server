@@ -56,14 +56,13 @@ class RequestBep2ToErc20SwapUsecase(
 
         val atomicSwap = binanceDexApiNodeClient.getSwapByID(swapBep2ToErc20RequestDto.bep2SwapID)
 
-
         val outAmountFromSender = atomicSwap.outAmount.get(0).amount
 
         val swap = SwapHistory()
-        swap.erc20SenderAddr = ETHProvider.getDeputyErc20Address()
-        //Bep2에서 나가는 갯수 * 기본단위 1e*8
+        swap.erc20SenderAddr = ETHProvider.getErc20ApplicationWalletAddress()
+        // Bep2에서 나가는 갯수 * 기본단위 1e*8
         swap.deputyOutAmount = BigDecimal(outAmountFromSender).divide(Bep2BacicUnitBigDecimal).toPlainString()
-        swap.erc20ChainAddr = swap.erc20ChainAddr
+        swap.erc20ChainAddr = atomicSwap.recipientOtherChain
         swap.inAmountToRecipient = BigDecimal(outAmountFromSender).divide(Bep2BacicUnitBigDecimal).toPlainString()
         swap.outAmountFromSender = atomicSwap.outAmount.get(0).amount.div(Bep2BacicUnitInt).toString()
         swap.randomNumberHash = atomicSwap.randomNumberHash
@@ -90,8 +89,11 @@ class RequestBep2ToErc20SwapUsecase(
         val timeStamp = swapHistory.timestamp
         // 3. _heightSpan
         val heightSpan = swapHistory.expireHeight
+
+        // 4. _senderAddr Erc20
+        val senderAddr = ETHProvider.getErc20ApplicationWalletAddress()
         // 4. _recipientAddr Erc20
-        val recipientAddr = swapHistory.erc20ChainAddr
+        val recipientAddr = atomicSwap.recipientOtherChain
 
         // 5. _bep2SenderAddr
         val bep2SenderB32Data: Bech32.Bech32Data? = Bech32.decode(swapHistory.senderAddr)
@@ -109,7 +111,7 @@ class RequestBep2ToErc20SwapUsecase(
         val bep2Amount = BigInteger(swapHistory.inAmountToRecipient).multiply(Erc20BasicUnitBigInteger)
 
         // 9. _recipientAddr Erc20
-        val refundRecipientAddr = ETHProvider.getDeputyErc20Address()
+        val refundRecipientAddr = ETHProvider.getErc20ApplicationWalletAddress()
 
         val htltFunction = Function(
             "htlt",
@@ -117,6 +119,7 @@ class RequestBep2ToErc20SwapUsecase(
                 Bytes32(randomNumberHash),
                 Uint64(timeStamp),
                 Uint256(heightSpan),
+                Address(senderAddr),
                 Address(recipientAddr),
                 Bytes20(bep2SenderAddr),
                 Bytes20(bep2RecipientAddr),
@@ -128,7 +131,7 @@ class RequestBep2ToErc20SwapUsecase(
         )
 
         val web3 = Web3j.build(HttpService(ETHProvider.getErc20Provider()))
-        val credentials: Credentials = Credentials.create(ETHProvider.getErc20PrivateKey())
+        val credentials: Credentials = Credentials.create(ETHProvider.getErc20ApplicationWalletPrivateKey())
 
         val ethGetTransactionCount: EthGetTransactionCount = web3
             .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send()
@@ -166,14 +169,14 @@ class RequestBep2ToErc20SwapUsecase(
             "calSwapID",
             listOf(
                 Bytes32(randomNumberHash),
-                Address(swapHistory.erc20SenderAddr),
+                Address(senderAddr),
                 Bytes20(bep2SenderAddr)
             ),
             references
         )
 
         val transaction = Transaction.createEthCallTransaction(
-            ETHProvider.getDeputyErc20Address(), ETHProvider.getErc20SwapContractAddr(),
+            ETHProvider.getErc20ApplicationWalletAddress(), ETHProvider.getErc20SwapContractAddr(),
             FunctionEncoder.encode(calSwapIDFunction)
         )
 
